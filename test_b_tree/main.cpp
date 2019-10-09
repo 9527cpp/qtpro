@@ -102,6 +102,10 @@ public:
 
         
     }
+
+
+
+
     TreeNode* lowestCommonAncestorBST(TreeNode* root, TreeNode* p, TreeNode* q) {
         TreeNode *parent = root;
         while(parent)
@@ -313,6 +317,30 @@ public:
         }
         return ans;
     }
+
+    void test(vector<int> &ans,TreeNode *root)
+    {
+        ans.push_back(root->val);
+        if(root->left)
+        {
+            root = root->left;
+            test(ans,root);      
+        }
+        if(root->right)
+        {
+            root = root->right;
+            test(ans,root);
+        }
+    }
+
+    vector<int> preorderTraversal_re(TreeNode* root) {
+        stack<TreeNode *> parents;
+        vector<int> ans;
+        if(root==NULL)return ans;
+        test(ans,root);        
+        return ans;
+    }
+
     vector<int> inorderTraversal(TreeNode* root) {
         stack<TreeNode *> parents;
         vector<int> ans;
@@ -524,6 +552,11 @@ int main()
     printf("preorder:");
     vi = s.preorderTraversal(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    printf("preorder_re:");
+    vi = s.preorderTraversal_re(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
     printf("\r\ninorder:");
     vi = s.inorderTraversal(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));

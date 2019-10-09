@@ -1,15 +1,18 @@
-﻿PROGRAM = main.exe
+﻿PROGRAM = test_b_tree.exe
 CC = cl.exe 
 LINK = link.exe
 
 .PHONY : all
 all: $(PROGRAM)
 
-CFLAGS = /w /EHsc /D_CRT_SECURE_NO_DEPRECATE /Zi
+CFLAGS =  /EHsc /DEBUG /Zi /c
 LDFLAGS = /DEBUG
 LIBS = 
-
+CPP = main.cpp
 OBJS = main.obj
+
+$(OBJS): $(CPP)
+	$(CC)  $(CFLAGS) $(CPP)
 
 $(PROGRAM): $(OBJS)
 	$(LINK) $(LDFLAGS) $(OBJS) $(LIBS) /out:$(PROGRAM)
