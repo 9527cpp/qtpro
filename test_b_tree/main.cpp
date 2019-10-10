@@ -7,6 +7,7 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <functional>
 using namespace std;
 
 struct TreeNode {
@@ -102,8 +103,6 @@ public:
 
         
     }
-
-
 
 
     TreeNode* lowestCommonAncestorBST(TreeNode* root, TreeNode* p, TreeNode* q) {
@@ -318,26 +317,27 @@ public:
         return ans;
     }
 
-    void test(vector<int> &ans,TreeNode *root)
-    {
-        ans.push_back(root->val);
-        if(root->left)
-        {
-            root = root->left;
-            test(ans,root);      
-        }
-        if(root->right)
-        {
-            root = root->right;
-            test(ans,root);
-        }
-    }
-
     vector<int> preorderTraversal_re(TreeNode* root) {
         stack<TreeNode *> parents;
         vector<int> ans;
         if(root==NULL)return ans;
-        test(ans,root);        
+    #if 0
+        void preorderTraversal__re_internal(vector<int> &ans,TreeNode *root)
+        {
+            ans.push_back(root->val);
+            if(root->left)preorderTraversal__re_internal(ans,root->left);      
+            if(root->right)preorderTraversal__re_internal(ans,root->right);
+        }    
+        preorderTraversal__re_internal(ans,root); 
+    #else
+        function<void(vector<int> &,TreeNode*)> preorderTraversal_re_internal_lambada = [&preorderTraversal_re_internal_lambada](vector<int> &ans,TreeNode *root)
+        {
+            ans.push_back(root->val);
+            if(root->left)preorderTraversal_re_internal_lambada(ans,root->left);                    
+            if(root->right)preorderTraversal_re_internal_lambada(ans,root->right);        
+        }; 
+        preorderTraversal_re_internal_lambada(ans,root);    
+    #endif          
         return ans;
     }
 
@@ -368,6 +368,58 @@ public:
         }
         return ans;
     }
+
+    vector<int> inorderTraversal_re(TreeNode* root) 
+    {
+        stack<TreeNode *> parents;
+        vector<int> ans;
+        if(root==NULL)return ans;
+    #if 0    
+        void inorderTraversal_re_internal(vector<int> &ans,TreeNode *root)
+        {      
+            if(root->left)inorderTraversal_re_internal(ans,root->left);  
+            ans.push_back(root->val);    
+            if(root->right)inorderTraversal_re_internal(ans,root->right);
+        }
+        inorderTraversal_re_internal(ans,root);  
+    #else
+        function<void(vector<int> &,TreeNode*)> inorderTraversal_re_internal_lambada = [&inorderTraversal_re_internal_lambada](vector<int> &ans,TreeNode *root)
+        {
+            if(root->left)inorderTraversal_re_internal_lambada(ans,root->left);   
+            ans.push_back(root->val);         
+            if(root->right)inorderTraversal_re_internal_lambada(ans,root->right);        
+        }; 
+        inorderTraversal_re_internal_lambada(ans,root);
+    #endif          
+        return ans;
+    }
+
+   
+    vector<int> postorderTraversal_re(TreeNode * root)
+    {
+        stack<TreeNode *> parents;
+        vector<int> ans;
+        if(root==NULL)return ans;
+    #if 0
+        void postorderTraversal_re_internal(vector<int> &ans,TreeNode *root)
+        {      
+            if(root->left)postorderTraversal_re_internal(ans,root->left);            
+            if(root->right)postorderTraversal_re_internal(ans,root->right);
+            ans.push_back(root->val);
+        } 
+        //postorderTraversal_re_internal(ans,root);
+    #else
+        function<void(vector<int> &,TreeNode*)> postoderTraversal_re_internal_lambada = [&postoderTraversal_re_internal_lambada](vector<int> &ans,TreeNode *root)
+        {
+            if(root->left)postoderTraversal_re_internal_lambada(ans,root->left);            
+            if(root->right)postoderTraversal_re_internal_lambada(ans,root->right);
+            ans.push_back(root->val);
+        }; 
+        postoderTraversal_re_internal_lambada(ans,root);
+    #endif    
+        return ans;
+    }
+
     bool isSameTree(TreeNode* p, TreeNode* q) {
         stack<TreeNode*>vtn_p;
         stack<TreeNode*>vtn_q;
@@ -553,13 +605,22 @@ int main()
     vi = s.preorderTraversal(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 
-    printf("preorder_re:");
+    printf("\r\npreorder_re:");
     vi = s.preorderTraversal_re(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 
     printf("\r\ninorder:");
     vi = s.inorderTraversal(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    printf("\r\ninorder_re:");
+    vi = s.inorderTraversal_re(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    printf("\r\npostorder_re:");
+    vi = s.postorderTraversal_re(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
     int val = s.maxDepth(root);
     printf("\r\nmaxDepth:%d",val);
     val = s.minDepth(root);
