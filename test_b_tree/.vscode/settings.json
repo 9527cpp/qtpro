@@ -4,6 +4,9 @@
         "vector": "cpp",
         "xutility": "cpp",
         "bitset": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "iterator": "cpp",
+        "random": "cpp",
+        "chrono": "cpp"
     }
 }

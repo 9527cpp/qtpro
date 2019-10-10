@@ -8,8 +8,9 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <chrono>
 using namespace std;
-
+using namespace chrono;
 struct TreeNode {
     int val;
     TreeNode *left;
@@ -99,11 +100,72 @@ TreeNode * createBinarySearchTree(int *arr,int len)
 //// BFS queue   DFS stack
 class Solution {
 public:
-    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
 
-        
+    bool hasPathSum(TreeNode* root, int sum) {
+        if(!root)return false;
+        int sum_t = 0;
+        bool bfind = false;
+        function<bool(TreeNode *,int)> hasPathSum_lambda = 
+        [&hasPathSum_lambda,&sum_t,&bfind](TreeNode* root, int sum)->bool
+        {    
+            if(bfind)return true;       
+            sum_t += root->val; 
+            if(root->left)  hasPathSum_lambda(root->left,sum);                    
+            if(root->right) hasPathSum_lambda(root->right,sum); 
+            if(!root->left && !root->right)
+            {
+                if(sum_t == sum)
+                bfind = true;
+            }
+            sum_t -= root->val;
+            return bfind;
+        };   
+        return hasPathSum_lambda(root,sum);
     }
 
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        stack<TreeNode *> stnp,stnq;
+        TreeNode * pA = NULL;
+        if(root==NULL)return pA;
+        int findp = 0;
+        int findq = 0;
+        function<void(TreeNode*,TreeNode*,TreeNode*,stack<TreeNode *>&,stack<TreeNode *>&)> lowestCommonAncestor_lambada = 
+        [&lowestCommonAncestor_lambada,&findp,&findq,&stnp,&stnq]
+        (TreeNode *root,TreeNode* p, TreeNode* q,stack<TreeNode *>&stnp,stack<TreeNode *>&stnq)
+        {
+            if(!findp)stnp.push(root);
+            if(!findq)stnq.push(root);
+            if(root->val == p->val)findp = 1;
+            if(root->val == q->val)findq = 1;
+            if(findp && findq) return;
+            if(root->left)lowestCommonAncestor_lambada(root->left,p,q,stnp,stnq);                    
+            if(root->right)lowestCommonAncestor_lambada(root->right,p,q,stnp,stnq);  
+            if(!findp)stnp.pop(); 
+            if(!findq)stnq.pop(); 
+        }; 
+        lowestCommonAncestor_lambada(root,p,q,stnp,stnq); 
+        while(stnp.size()!=stnq.size())
+        {
+            if(stnp.size()>stnq.size())
+            {
+                stnp.pop();
+            }
+            else stnq.pop();
+        }
+        while(!stnp.empty() &&!stnq.empty())
+        {
+            TreeNode * p = stnp.top();
+            TreeNode * q = stnq.top();
+            if(p->val == q->val)
+            {
+                pA = p;
+                break;
+            }
+            stnp.pop();
+            stnq.pop();
+        }
+        return pA;   
+    }
 
     TreeNode* lowestCommonAncestorBST(TreeNode* root, TreeNode* p, TreeNode* q) {
         TreeNode *parent = root;
@@ -392,9 +454,42 @@ public:
         inorderTraversal_re_internal_lambada(ans,root);
     #endif          
         return ans;
+    } 
+
+    vector<int> postorderTraversal(TreeNode * root)
+    {
+        stack<TreeNode *> stn;
+        vector<int> ans;
+        if(root==NULL)return ans;
+        TreeNode *pTemp = root;
+        TreeNode *pLast;
+        while(pTemp)
+        {
+            stn.push(pTemp);
+            pTemp = pTemp->left;
+        }
+        while(!stn.empty())
+        {
+            pTemp = stn.top();
+            while(pTemp->right &&pTemp->right!=pLast)
+            {
+                pTemp = pTemp->right;
+                pLast = pTemp;
+                stn.push(pTemp);
+                while(pTemp->left)
+                {
+                    stn.push(pTemp->left);
+                    pTemp = pTemp->left;
+                    pLast = pTemp;
+                }
+            }
+            pLast = pTemp;
+            stn.pop();
+            ans.push_back(pTemp->val);
+        }
+        return ans;  
     }
 
-   
     vector<int> postorderTraversal_re(TreeNode * root)
     {
         stack<TreeNode *> parents;
@@ -585,8 +680,6 @@ public:
 */
 
 
-
-
 int main()
 {
     Solution s;
@@ -601,9 +694,16 @@ int main()
     TreeNode * root = createBinaryTree(array,len);
     TreeNode * bstroot = createBinarySearchTree(array,len);
     vector<int>vi;
+    system_clock::time_point start,end;
+    microseconds duration;
+
     printf("preorder:");
+    start = system_clock::now();
     vi = s.preorderTraversal(root);
+    end = system_clock::now();
+    duration = duration_cast<microseconds>(end - start);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+    printf("\tduration:%fs", double(duration.count()) * microseconds::period::num / microseconds::period::den);
 
     printf("\r\npreorder_re:");
     vi = s.preorderTraversal_re(root);
@@ -617,18 +717,26 @@ int main()
     vi = s.inorderTraversal_re(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 
+    printf("\r\npostorder:");
+    vi = s.postorderTraversal(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
     printf("\r\npostorder_re:");
     vi = s.postorderTraversal_re(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 
     int val = s.maxDepth(root);
     printf("\r\nmaxDepth:%d",val);
+
     val = s.minDepth(root);
     printf("\r\nminDepth:%d",val);
+
     val = s.sumOfLeftLeaves(root);
     printf("\r\nsumOfLeftLeaves:%d",val);
+
     val = s.isSymmetric(root);
     printf("\r\nisSymmetric:%s",val?"true":"false");
+
     vector<vector<int> > vvi;
     printf("\r\nlevelOrder:");
     vvi = s.levelOrder(root);
@@ -637,6 +745,7 @@ int main()
         copy((*itr).begin(),(*itr).end(),ostream_iterator<int>(cout,","));
         cout<<"-->";
     }
+
     printf("\r\nzigzagLevelOrder:");
     vvi = s.zigzagLevelOrder(root);
     for(vector<vector<int> >::iterator itr = vvi.begin();itr!=vvi.end();itr++)
@@ -648,14 +757,24 @@ int main()
     printf("\r\nbst inorder:");
     vi = s.inorderTraversal(bstroot);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
     val = s.isValidBST(bstroot);
     printf("\r\nisValidBST:%s",val?"true":"false");
+
     printf("\r\nbinaryTreePaths:");
     vector<string> vs =s.binaryTreePaths(root);
     copy(vs.begin(),vs.end(),ostream_iterator<string>(cout,","));
+
     printf("\r\nlowestCommonAncestorBST:");
     TreeNode * parent = s.lowestCommonAncestorBST(bstroot,new TreeNode(9),new TreeNode(7));
     printf("%d",parent?parent->val:0);
+
+    printf("\r\nlowestCommonAncestor:");
+    parent = s.lowestCommonAncestor(root,new TreeNode(9),new TreeNode(15));
+    printf("%d",parent?parent->val:0);
+
+    val = s.hasPathSum(root,30);
+    printf("\r\nhasPathSum:%s",val?"true":"false");
 
     return 0;
 }
