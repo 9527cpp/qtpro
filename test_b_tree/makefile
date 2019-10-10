@@ -8,15 +8,18 @@ all: $(PROGRAM)
 CFLAGS =  /EHsc /DEBUG /Zi /c
 LDFLAGS = /DEBUG
 LIBS = 
-CPP = main.cpp
-OBJS = main.obj
 
-$(OBJS): $(CPP)
-	$(CC)  $(CFLAGS) $(CPP)
+OBJS = main.obj test.obj
+
+.c.obj:
+	$(CC)  $(CFLAGS) $*.c
+
+.cpp.obj:
+	$(CC)  $(CFLAGS) $*.cpp
 
 $(PROGRAM): $(OBJS)
 	$(LINK) $(LDFLAGS) $(OBJS) $(LIBS) /out:$(PROGRAM)
-		
+
 clean:  
     del /Q *.obj
 	del /Q *.pdb

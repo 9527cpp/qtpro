@@ -100,6 +100,27 @@ TreeNode * createBinarySearchTree(int *arr,int len)
 //// BFS queue   DFS stack
 class Solution {
 public:
+    int sumNumbers(TreeNode* root) {
+        if(!root)return 0;
+        int sum_t = 0,sum = 0;
+        function<int(TreeNode *)> sumNumbers_lambda = 
+        [&sumNumbers_lambda,&sum_t,&sum](TreeNode* root)->int
+        {    
+            if(!root)return sum;
+            sum_t *=10;       
+            sum_t += root->val; 
+            if(root->left)  sumNumbers_lambda(root->left);                    
+            if(root->right) sumNumbers_lambda(root->right); 
+            if(!root->left && !root->right)
+            {
+                sum += sum_t;
+            }
+            sum_t -= root->val;
+            sum_t/=10;
+            return sum;
+        };   
+        return sumNumbers_lambda(root);   
+    }
 
     bool hasPathSum(TreeNode* root, int sum) {
         if(!root)return false;
@@ -678,18 +699,27 @@ public:
         /
        15
 */
+#ifdef __cplusplus
+extern "C"{
+#endif
+extern void test();
 
+#ifdef __cplusplus
+}
+#endif
 
 int main()
 {
+    test();
     Solution s;
-    int array[]={3,9,20,0,0,15,7};//0 present null
+    //int array[]={3,9,20,0,0,15,7};//0 present null
     //int array[]={1};
     //int array[]={2,1};
     //int array[]={1,0,2};
-    //int array[]={1,2,2,3,4,4,3};
+    int array[]={1,2,2,3,4,4,3};
     //int array[]={1,2,2,0,3,0,3};
     //int array[]={1,2,3,0,5};
+    //int array[]={10,5,15,3,7,13,18,1,0,6};
     int len = sizeof(array)/sizeof(array[0]);
     TreeNode * root = createBinaryTree(array,len);
     TreeNode * bstroot = createBinarySearchTree(array,len);
@@ -775,6 +805,9 @@ int main()
 
     val = s.hasPathSum(root,30);
     printf("\r\nhasPathSum:%s",val?"true":"false");
+
+    val = s.sumNumbers(root);
+    printf("\r\nsumNumbers:%d",val);
 
     return 0;
 }
