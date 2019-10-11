@@ -100,6 +100,49 @@ TreeNode * createBinarySearchTree(int *arr,int len)
 //// BFS queue   DFS stack
 class Solution {
 public:
+    // delete a node from a BST
+    TreeNode* deleteNode(TreeNode* root, int key) {
+
+    }
+
+    int countNodes(TreeNode* root) {
+        int sum = 0;
+        if(!root)return 0;
+        function<int(TreeNode*)> countNodes_lambada = 
+        [&countNodes_lambada,&sum](TreeNode *root)->int
+        {
+            if(root->left)countNodes_lambada(root->left);          
+            if(root->right)countNodes_lambada(root->right);  
+            sum++;
+            return sum;
+        };
+        sum = countNodes_lambada(root);  
+        return sum;
+    }
+
+    void recoverTree(TreeNode* root) {
+        vector<TreeNode *> vtnp;
+        vector<int> vi; 
+        if(!root)return;
+        function<void(vector<TreeNode *> &,vector<int> &,TreeNode*)> recoverTree_lambada = 
+        [&recoverTree_lambada](vector<TreeNode *> &vtnp,vector<int> &vi,TreeNode *root)
+        {
+            if(root->left)recoverTree_lambada(vtnp,vi,root->left);   
+            vtnp.push_back(root); 
+            vi.push_back(root->val);        
+            if(root->right)recoverTree_lambada(vtnp,vi,root->right);        
+        };
+        recoverTree_lambada(vtnp,vi,root);  
+        sort(vi.begin(),vi.end(),[](int a,int b)->bool{return a<b;});  
+        auto itrvtn =vtnp.begin();
+        auto itrvi = vi.begin();
+        for(;itrvtn!=vtnp.end();itrvtn++,itrvi++)
+        {
+            (*itrvtn)->val = *itrvi;
+        }  
+        return;    
+    }
+
     int sumNumbers(TreeNode* root) {
         if(!root)return 0;
         int sum_t = 0,sum = 0;
@@ -716,10 +759,12 @@ int main()
     //int array[]={1};
     //int array[]={2,1};
     //int array[]={1,0,2};
-    int array[]={1,2,2,3,4,4,3};
+    //int array[]={1,2,2,3,4,4,3};
     //int array[]={1,2,2,0,3,0,3};
     //int array[]={1,2,3,0,5};
     //int array[]={10,5,15,3,7,13,18,1,0,6};
+    //int array[]={3,1,4,0,0,2};
+    int array[]={5,3,6,2,4,0,7};
     int len = sizeof(array)/sizeof(array[0]);
     TreeNode * root = createBinaryTree(array,len);
     TreeNode * bstroot = createBinarySearchTree(array,len);
@@ -809,5 +854,20 @@ int main()
     val = s.sumNumbers(root);
     printf("\r\nsumNumbers:%d",val);
 
+    val = s.countNodes(root);
+    printf("\r\ncountNodes:%d",val);
+
+///////////////////modify////////////////////////
+#if 0
+    s.recoverTree(root);
+    printf("\r\nrecoverTreeToBST inorder_re:");
+    vi = s.inorderTraversal_re(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+#endif
+
+    bstroot = s.deleteNode(bstroot,4);
+    vi = s.inorderTraversal_re(bstroot);
+    printf("\r\ndeleteNode inorder_re:");
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
     return 0;
 }

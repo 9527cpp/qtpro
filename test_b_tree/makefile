@@ -9,7 +9,8 @@ CFLAGS =  /EHsc /DEBUG /Zi /c
 LDFLAGS = /DEBUG
 LIBS = 
 
-OBJS = main.obj test.obj
+OBJS = main.obj \
+		test.obj
 
 .c.obj:
 	$(CC)  $(CFLAGS) $*.c
