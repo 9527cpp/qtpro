@@ -8,7 +8,9 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <numeric>
 #include <chrono>
+#include <unordered_map>
 using namespace std;
 using namespace chrono;
 struct TreeNode {
@@ -102,7 +104,127 @@ class Solution {
 public:
     // delete a node from a BST
     TreeNode* deleteNode(TreeNode* root, int key) {
+        TreeNode * pt = root;
+        TreeNode * p = root;       
+        TreeNode * pkey = root;
+        // find the key node
+        while(pkey->val!=key)
+        {
+            p = pkey;
+            if(pkey->val < key)pkey = pkey->right;
+            else if(pkey->val > key)pkey = pkey->left;
+        }
+        pt = pkey;
+        // find the pos
+        if(pt->right)
+        {
+            p = pt;
+            pt = pt->right;
+            while(pt->left)
+            {
+                p = pt;
+                pt = pt->left; 
+            }      
+            pt->left = pkey ->left;
+            pt->right = pkey->right; 
+            p->right = NULL;       
+        }
+        else if(pt->left)
+        {
+            p = pt;
+            pt = pt->left;
+            while(pt->right)
+            {
+                p = pt;
+                pt = pt->right;
+            }
+            pt->left = pkey ->left;
+            pt->right = pkey->right;
+            p->left = NULL;
+        } 
+        return root;
+    }
 
+    vector<vector<int>> pathSum(TreeNode* root, int sum) {
+        
+    }
+
+
+    int kthSmallest(TreeNode* root, int k) {
+        stack<TreeNode *>stn;
+        if(!root)return 0;
+        TreeNode * p ;
+        int kmin = 0;
+        int count = 0;
+        while(root)
+        {
+            stn.push(root);
+            root = root->left;
+        }    
+        while(!stn.empty())
+        {
+            p = stn.top();
+            stn.pop();
+            count++;
+            if(count == k)break;
+            if(p->right)
+            {
+                p = p->right;
+                stn.push(p);
+                while(p->left)
+                {   
+                    p = p->left;
+                    stn.push(p);
+                }
+            }
+        }
+        return p->val;
+    }
+
+    int getMinimumDifference(TreeNode* root) {
+        stack<TreeNode *> stn;
+        vector<int>vi,vit;
+        TreeNode * pt = root;
+        if(!root) return 0;
+        while(pt){stn.push(pt);pt =pt->left;}
+        while(!stn.empty())
+        {
+            TreeNode * pt = stn.top();
+            vi.push_back(pt->val);
+            stn.pop();
+            if(pt->right)
+            {
+                pt = pt->right;
+                while(pt)
+                {
+                    stn.push(pt);
+                    pt = pt->left;            
+                }
+            }    
+        }
+        adjacent_difference(vi.begin(),vi.end(),vi.begin());
+        int minval =*min_element(vi.begin()+1,vi.end());
+        return minval;
+    }
+    vector<int> findMode(TreeNode* root) {
+        vector<int> ans;
+        if(root==NULL)return ans;
+        function<void(vector<int> &,TreeNode*)> findMode_lambada = [&findMode_lambada](vector<int> &ans,TreeNode *root)
+        {
+            if(root->left)findMode_lambada(ans,root->left);   
+            ans.push_back(root->val);         
+            if(root->right)findMode_lambada(ans,root->right);        
+        }; 
+        findMode_lambada(ans,root);  
+        unordered_map<int,int> umii;
+        for(auto item:ans)umii[item]++; 
+        ans.clear();
+        int maxele = (*max_element(umii.begin(),umii.end(),[](pair<int,int> a, pair<int,int> b)->bool{return a.second<b.second?true:false;})).second;
+        for(auto item:umii)
+        {
+            if(item.second == maxele)ans.push_back(item.first);
+        }
+        return ans;
     }
 
     int countNodes(TreeNode* root) {
@@ -365,8 +487,8 @@ public:
         if(!root)return vvi;
         qtn.push(root);
         int nCount = 1;
-        int i = 0;
-        int j = 0;
+        int i = 0;// the total nums of node of next level
+        int j = 0;// the number that has been passed of current level
         while(!qtn.empty())
         {
             vector<int>vi;
@@ -755,7 +877,7 @@ int main()
 {
     test();
     Solution s;
-    //int array[]={3,9,20,0,0,15,7};//0 present null
+    int array[]={3,9,20,0,0,15,7};//0 present null
     //int array[]={1};
     //int array[]={2,1};
     //int array[]={1,0,2};
@@ -764,7 +886,8 @@ int main()
     //int array[]={1,2,3,0,5};
     //int array[]={10,5,15,3,7,13,18,1,0,6};
     //int array[]={3,1,4,0,0,2};
-    int array[]={5,3,6,2,4,0,7};
+    //int array[]={5,3,6,2,4,0,7};
+    //int array[]={1,0,2,2,3};
     int len = sizeof(array)/sizeof(array[0]);
     TreeNode * root = createBinaryTree(array,len);
     TreeNode * bstroot = createBinarySearchTree(array,len);
@@ -857,6 +980,13 @@ int main()
     val = s.countNodes(root);
     printf("\r\ncountNodes:%d",val);
 
+    printf("\r\nfindMode:");
+    vi = s.findMode(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    val = s.kthSmallest(bstroot,3);
+    printf("\r\nkthSmallest:%d",val);
+
 ///////////////////modify////////////////////////
 #if 0
     s.recoverTree(root);
@@ -865,7 +995,7 @@ int main()
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 #endif
 
-    bstroot = s.deleteNode(bstroot,4);
+    bstroot = s.deleteNode(bstroot,3);
     vi = s.inorderTraversal_re(bstroot);
     printf("\r\ndeleteNode inorder_re:");
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
