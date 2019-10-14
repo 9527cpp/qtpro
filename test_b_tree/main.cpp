@@ -145,10 +145,74 @@ public:
         return root;
     }
 
-    vector<vector<int>> pathSum(TreeNode* root, int sum) {
-        
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int>vi;
+        if(!root)return vi;
+        int h = 0;
+        int hp = 0;
+        function<void(TreeNode *)>dfs_right =[&dfs_right,&vi,&h,&hp](TreeNode *root)
+        {
+            if(!root)return;
+            h++;
+            if(h>hp)
+            {
+                hp = h;
+                vi.push_back(root->val);
+            }
+            dfs_right(root->right);
+            dfs_right(root->left);
+            h--;
+        }; 
+        dfs_right(root);
+        return vi;
     }
 
+    vector<vector<int>> pathSum(TreeNode* root, int sum) {
+        vector<vector<int> >vvi;
+        if(!root)return vvi;
+        int sum_t = 0;
+        vector<int>vi;
+        function<void(TreeNode *,int)> pathSum_lambda = 
+        [&pathSum_lambda,&sum_t,&vi,&vvi](TreeNode* root, int sum)
+        {           
+            sum_t += root->val; 
+            vi.push_back(root->val);
+            if(root->left)  pathSum_lambda(root->left,sum);                    
+            if(root->right) pathSum_lambda(root->right,sum); 
+            if(!root->left && !root->right&&sum_t == sum)
+            {
+                vvi.push_back(vi);
+            }
+            vi.pop_back();
+            sum_t -= root->val;
+        }; 
+        pathSum_lambda(root,sum);   
+        return vvi;      
+    }
+
+    bool isBalanced(TreeNode* root) {
+        if(!root)return true;
+        bool bBalance = true;
+        function<int(TreeNode*,bool&)>height = [&height](TreeNode*root,bool &bBalance)->int
+        {
+            if(!root)return 0;
+            if(!bBalance)return 0;
+            int hl = height(root->left,bBalance);
+            int hr = height(root->right,bBalance);
+            if(hl > hr +1 || hr > hl+1)bBalance = false;
+            return max(hl,hr)+1; 
+        };
+        height(root,bBalance);
+        return bBalance;
+    }
+
+    int height(TreeNode * root)
+    {
+        if(!root)return 0;
+        int hl = height(root->left);
+        int hr = height(root->right);
+        return max(hl,hr)+1; 
+    }
 
     int kthSmallest(TreeNode* root, int k) {
         stack<TreeNode *>stn;
@@ -888,6 +952,8 @@ int main()
     //int array[]={3,1,4,0,0,2};
     //int array[]={5,3,6,2,4,0,7};
     //int array[]={1,0,2,2,3};
+    //int array[]={5,4,8,11,0,13,4,7,2,0,0,5,1};
+    
     int len = sizeof(array)/sizeof(array[0]);
     TreeNode * root = createBinaryTree(array,len);
     TreeNode * bstroot = createBinarySearchTree(array,len);
@@ -987,6 +1053,23 @@ int main()
     val = s.kthSmallest(bstroot,3);
     printf("\r\nkthSmallest:%d",val);
 
+    val = s.height(root);
+    printf("\r\nheight:%d",val);
+
+    val = s.isBalanced(root);
+    printf("\r\nisBalanced:%s",val?"true":"false");
+
+    printf("\r\npathSum:");
+    vvi = s.pathSum(root,22);
+    for(vector<vector<int> >::iterator itr = vvi.begin();itr!=vvi.end();itr++)
+    {
+        copy((*itr).begin(),(*itr).end(),ostream_iterator<int>(cout,","));
+        cout<<"-->";
+    }
+
+    printf("\r\nrightSideView:");
+    vi = s.rightSideView(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
 ///////////////////modify////////////////////////
 #if 0
     s.recoverTree(root);
