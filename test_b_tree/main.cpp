@@ -10,6 +10,7 @@
 #include <functional>
 #include <numeric>
 #include <chrono>
+#include <map>
 #include <unordered_map>
 using namespace std;
 using namespace chrono;
@@ -145,6 +146,83 @@ public:
         return root;
     }
 
+    vector<int> largestValues(TreeNode* root) {
+        queue<TreeNode *>qtn;
+        vector<int>vi;
+        if(root)qtn.push(root);
+        else return vi;
+        int i = 0;
+        int len = qtn.size();
+        int max_v = 0;
+        function<void(TreeNode *)> largestValues_lambda =
+        [&largestValues_lambda,&qtn,&i,&len,&max_v,&vi](TreeNode *root)
+        {
+            if(root->left)qtn.push(root->left);
+            if(root->right)qtn.push(root->right);
+            TreeNode *p = qtn.front();
+            if(p->val > max_v)max_v = p->val;
+            qtn.pop();
+            i++;
+            if(i==len)
+            {
+                len = qtn.size();
+                i = 0;
+                vi.push_back(max_v);
+                max_v = 0;   
+            }
+            if(!qtn.size())return;
+            p = qtn.front();
+
+            largestValues_lambda(p);      
+        };
+        largestValues_lambda(root);
+        return vi;
+    }
+
+    int findBottomLeftValue(TreeNode* root) {
+        queue<TreeNode *>qtn;
+        TreeNode * p1;
+        if(!root)return 0;
+        qtn.push(root);
+        while(!qtn.empty())
+        {
+            int len = qtn.size();
+            for(int i = 0;i<len;i++)
+            {
+                TreeNode *p = qtn.front();
+                if(p->left)qtn.push(p->left);
+                if(p->right)qtn.push(p->right);
+                qtn.pop();
+                if(i == 0)p1 = p;
+            }      
+        }    
+        return p1->val;
+    }
+
+    vector<int> findFrequentTreeSum(TreeNode* root) {
+        unordered_map<int,int>mii;
+        vector<int>vi;
+        if(!root)return vi;
+        int sum = 0;
+        function<int(TreeNode*)>dfs_lambda=[&dfs_lambda,&mii](TreeNode* root)->int
+        {   
+            int sum = 0;       
+            if(root->left)sum += dfs_lambda(root->left);  
+            if(root->right)sum += dfs_lambda(root->right); 
+            sum+=root->val;
+            mii[sum]++;
+            //printf("\r\nroot->val:%d,%d\r\n",root->val,sum);
+            return sum;
+        };
+        sum = dfs_lambda(root);
+        int maxele = (*max_element(mii.begin(),mii.end(),[](pair<int,int> a, pair<int,int> b)->bool{return a.second<b.second?true:false;})).second;
+        for(auto item:mii)
+        {
+            if(item.second == maxele)vi.push_back(item.first);
+        }
+        return vi;
+    }
+
     vector<int> rightSideView(TreeNode* root) {
         vector<int>vi;
         if(!root)return vi;
@@ -206,8 +284,7 @@ public:
         return bBalance;
     }
 
-    int height(TreeNode * root)
-    {
+    int height(TreeNode * root){
         if(!root)return 0;
         int hl = height(root->left);
         int hr = height(root->right);
@@ -270,6 +347,7 @@ public:
         int minval =*min_element(vi.begin()+1,vi.end());
         return minval;
     }
+
     vector<int> findMode(TreeNode* root) {
         vector<int> ans;
         if(root==NULL)return ans;
@@ -1070,6 +1148,15 @@ int main()
     printf("\r\nrightSideView:");
     vi = s.rightSideView(root);
     copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    printf("\r\nfindFrequentTreeSum:");
+    vi = s.findFrequentTreeSum(root);
+    copy(vi.begin(),vi.end(),ostream_iterator<int>(cout,","));
+
+    val = s.findBottomLeftValue(root);
+    printf("\r\nnfindBottomLeftValue:%d",val);
+
+    s.largestValues(root);
 ///////////////////modify////////////////////////
 #if 0
     s.recoverTree(root);
